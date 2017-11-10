@@ -36,6 +36,11 @@ class CustomerMailer < ActionMailer::Base
     data_user = vars[:data_user]
     status = vars[:order_status]
 
+    html_products = products_detail_to_html(data_order[:order_products])
+    hash_products = {order_products: html_products }
+
+    data_order.merge!(hash_products)
+
     #Generals
     template.gsub!('%order_status%', vars[:order_status] )
     template.gsub!('%order_deposit_accounts%', deposit_accounts(vars[:shopping_cart]))
@@ -90,6 +95,62 @@ class CustomerMailer < ActionMailer::Base
           "RUT: 76.799.430-3<br>" \
           "Cuenta: 86066854" \
         "</td>" \
+      "</tr>" \
+    "</table>"
+  end
+
+  def products_detail_to_html(products)
+    table = "<table style='width: 100%; border-collapse: collapse; border: 0; color: black; margin-bottom: 10px'>" \
+      "<tr style='background-color: white; color: black'>" \
+        "<td style='padding: 5px'>ITEM</td>" \
+        "<td style='padding: 5px; width: 30%'>NOMBRE</td>" \
+        "<td style='padding: 5px'>CÓD. SP</td>" \
+        "<td style='padding: 5px; text-align: right; white-spice: nowrap'>VALOR C.IVA</td>" \
+        "<td style='padding: 5px; text-align: right'>CANT.</td>" \
+        "<td style='padding: 5px; text-align: right'>SUBTOTAL</td>" \
+      "</tr>"
+      total_products = 0
+      shipping_cost = 0
+      products.each do |product|
+        if product[:name] != "DESPACHO"
+          table += "<tr>" \
+            "<td style='padding: 5px; width: 40%'>#{product[:name]}</td>" \
+            "<td style='padding: 5px'>#{product[:code]}</td>" \
+            "<td style='padding: 5px; text-align: right'>#{ product[:price]}</td>" \
+            "<td style='padding: 5px; text-align: right'>#{product[:quantity]}</td>" \
+            "<td style='padding: 5px; text-align: right'>#{clpp product[:quantity].to_i * product[:price].to_i}</td>" \
+          "</tr>"
+          total_products += product[:price].to_i * product[:quantity].to_i
+        else
+          shipping_cost += product[:price] 
+        end   
+      end
+      table += "<tr style='border-top: 1px solid #DDD'>" \
+        "<td colspan='3'></td>" \
+        "<td style='padding: 5px; text-align: right' colspan='2'>Subtotal C.IVA</td>" \
+        "<td style='padding: 5px; text-align: right'><b>#{clpp total_products }</b></td>" \
+        "</tr>" \
+        "<tr>" \
+          "<td colspan='3'></td>" \
+          "<td style='padding: 5px; text-align: right' colspan='2'>Despacho</td>" \
+          "<td style='padding: 5px; text-align: right'><b>#{clpp shipping_cost}</b></td>" \
+        "</tr>"
+
+      #TODO: discount
+      discount = 0
+      if false 
+        table += "<tr>" \
+          "<td style='padding: 5px' colspan=3>CUPÓN DE DESCUENTO: #{self.discount_code}</td>" \
+          "<td style='padding: 5px; text-align: right'>#{clp -self.discount_amount_coupon}</td>" \
+          "<td style='padding: 5px; text-align: right'>1</td>" \
+          "<td style='padding: 5px; text-align: right'>#{clp -self.discount_amount_coupon}</td>" \
+        "</tr>"
+      end
+      total = total_products + discount + shipping_cost
+      table +=  "<tr>" \
+        "<td colspan='3'></td>" \
+        "<td style='padding: 5px; text-align: right' colspan='2'>Total</td>" \
+        "<td style='padding: 5px; text-align: right'><b>#{clpp total}</b></td>" \
       "</tr>" \
     "</table>"
   end
