@@ -207,7 +207,8 @@ class Api::V1::MailerController < ApplicationController
                   :order_shipping_address_number, :order_shipping_address_phone, 
                   :order_shipping_cost, :order_shipping_method, :order_shipping_service, 
                   :order_shipping_courier, :order_tracking_number, :order_tracking_state, 
-                  :order_products, :order_cost_total, :order_only_local, :order_doc_num
+                  :order_cost_total, :order_only_local, :order_doc_num, order_products: [
+                    :name, :code, :price, :quantity ]
             ] 
         ])
     end
