@@ -2,6 +2,10 @@
 class Api::V1::ServiceLayer::OrdersController < ApplicationController
 
   def update_order_status
+
+    status_response = nil
+    json_msg = nil
+
     doc_entry = params_order[:doc_entry]
     status = params_order[:order][:status]
 
@@ -19,29 +23,62 @@ class Api::V1::ServiceLayer::OrdersController < ApplicationController
 
       if is_status_valid(status)
 
-        MyLog.debug "STATUS VALIDO"
+        begin
 
-        #prepare status as json
-        json_status = {
-          "U_ORDER_STATUS" => status
-        }
-        
-        response = SalesOrder.update_order(doc_entry, json_status.to_json)
+          MyLog.debug "STATUS VALIDO"
 
-        MyLog.debug "response"
-        MyLog.debug response
+          #prepare status as json
+          json_status = {
+            "U_ORDER_STATUS" => status
+          }
+          
+          response = SalesOrder.update_order(doc_entry, json_status.to_json)
+
+          MyLog.debug "response"
+          MyLog.debug response
+
+          code = response.code.to_i
+
+          MyLog.debug "code"
+          MyLog.debug code
+
+          case code
+          when 200 || 201 || 204
+            #Success
+            status_response = 200
+            json_msg = {report: "OK"}
+          when (400..499)
+            #Bad request
+            status_response = 400
+            json_msg = {report: "ERROR: Problemas en la petición hecha a Servicer Layer"}
+          when (500..599)
+            #Server Problems
+            status_response = 500
+            json_msg = {report: "ERROR: Problemas en el servidor de Service Layer"}
+          end
+
+
+        rescue Exception => e
+          MyLog.debug "Exception OrdersController"
+          MyLog.debug e
+          status_response = 500
+          json_msg = {report: "Exception: #{e}"}
+        end      
 
       else
         #El estado enviado no es valido
+        status_response = 400
+        json_msg = {report: "ERROR: El estado de la orden es invalido"}
       end
 
     else
 
       #No hay status ingresado
-
+      status_response = 400
+      json_msg = {report: "ERROR: La peticion no posee el estado de la orden"}
     end
 
-    render json: {msg: "hola"}, status: 200
+    render json: json_msg, status: status_response
   end
 
   def update_line_order_status
@@ -49,7 +86,7 @@ class Api::V1::ServiceLayer::OrdersController < ApplicationController
 
     #data response
     status_response = nil
-    @json_msg = nil
+    json_msg = nil
 
     MyLog.debug "params_line_order"
     MyLog.debug params_line_order
@@ -93,15 +130,15 @@ class Api::V1::ServiceLayer::OrdersController < ApplicationController
           when 200 || 201 || 204
             #Success
             status_response = 200
-            @json_msg = {msg: "200"}
+            json_msg = {report: "OK"}
           when (400..499)
             #Bad request
             status_response = 400
-            @json_msg = {msg: "400"}
+            json_msg = {report: "ERROR: Problemas en la petición hecha a Servicer Layer"}
           when (500..599)
             #Server Problems
             status_response = 500
-            @json_msg = {msg: "500"}
+            json_msg = {report: "ERROR: Problemas en el servidor de Service Layer"}
           end
 
 
@@ -109,19 +146,19 @@ class Api::V1::ServiceLayer::OrdersController < ApplicationController
           MyLog.debug "Exception OrdersController"
           MyLog.debug e
           status_response = 500
-          @json_msg = {msg: "500"}
+          json_msg = {report: "Exception: #{e}"}
         end
       else
         #El estado es invalido
         status_response = 400
-        @json_msg = {msg: "400"}
+        json_msg = {report: "ERROR: El estado de la línea de la orden es inválido"}
       end 
     else
       #Error en los parametros enviados
       status_response = 400
-      @json_msg = {msg: "400"}
+      json_msg = {report: "ERROR: Faltan parametros en la petición"}
     end 
-    render json: @json_msg, status: status_response
+    render json: json_msg, status: status_response
   end
 
   def list
