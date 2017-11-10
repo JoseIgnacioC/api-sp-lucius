@@ -43,7 +43,7 @@ class Api::V1::ServiceLayer::OrdersController < ApplicationController
           MyLog.debug code
 
           case code
-          when 200 || 201 || 204
+          when 200, 201, 204
             #Success
             status_response = 200
             report_response = "OK"
@@ -55,8 +55,10 @@ class Api::V1::ServiceLayer::OrdersController < ApplicationController
             #Server Problems
             status_response = 500
             report_response = "ERROR: Problemas en el servidor de Service Layer"
+          else
+            status_response = 500
+            report_response = "ERROR: Desconocido"            
           end
-
 
         rescue Exception => e
           MyLog.debug "Exception OrdersController"
@@ -72,7 +74,6 @@ class Api::V1::ServiceLayer::OrdersController < ApplicationController
       end
 
     else
-
       #No hay status ingresado
       status_response = 400
       report_response = "ERROR: La peticion no posee el estado de la orden"
@@ -85,8 +86,8 @@ class Api::V1::ServiceLayer::OrdersController < ApplicationController
     MyLog.debug "OrdersController"
 
     #data response
-    status_response = nil
-    @report_response = nil
+    status_response = ""
+    report_response = ""
 
     MyLog.debug "params_line_order"
     MyLog.debug params_line_order
@@ -127,18 +128,25 @@ class Api::V1::ServiceLayer::OrdersController < ApplicationController
           MyLog.debug code
 
           case code
-          when 200 || 201 || 204
+          when 200, 201, 204
             #Success
             status_response = 200
-            @report_response = {report: "OK"}
+            report_response = "OK"
+            MyLog.debug "OK"
           when (400..499)
             #Bad request
             status_response = 400
-            @report_response = {report: "ERROR: Problemas en la petición hecha a Servicer Layer"}
+            report_response = "ERROR: Problemas en la petición hecha a Servicer Layer"
+            MyLog.debug "ERR 400"
+
           when (500..599)
             #Server Problems
             status_response = 500
-            @report_response = {report: "ERROR: Problemas en el servidor de Service Layer"}
+            report_response = "ERROR: Problemas en el servidor de Service Layer"
+            MyLog.debug "ERR 500"
+          else
+            status_response = 500
+            report_response = "ERROR: Desconocido"
           end
 
 
@@ -146,19 +154,20 @@ class Api::V1::ServiceLayer::OrdersController < ApplicationController
           MyLog.debug "Exception OrdersController"
           MyLog.debug e
           status_response = 500
-          @report_response = {report: "Exception: #{e}"}
+          report_response = "Exception: #{e}"
         end
       else
         #El estado es invalido
         status_response = 400
-        @report_response = {report: "ERROR: El estado de la línea de la orden es inválido"}
+        report_response = "ERROR: El estado de la línea de la orden es inválido"
       end 
     else
       #Error en los parametros enviados
       status_response = 400
-      @report_response = {report: "ERROR: Faltan parametros en la petición"}
+      report_response = "ERROR: Faltan parametros en la petición"
     end 
-    render json: @report_response.to_json, status: status_response
+
+    render json: {report: report_response}, status: status_response
   end
 
   def list
@@ -167,7 +176,6 @@ class Api::V1::ServiceLayer::OrdersController < ApplicationController
 
     render json: @json_sales_order, status: 200
   end
-
 
   private 
 
