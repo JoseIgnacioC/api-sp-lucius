@@ -118,7 +118,7 @@ class CustomerMailer < ActionMailer::Base
             "<td style='padding: 5px'>#{product[:code]}</td>" \
             "<td style='padding: 5px; text-align: right'>#{ product[:price]}</td>" \
             "<td style='padding: 5px; text-align: right'>#{product[:quantity]}</td>" \
-            "<td style='padding: 5px; text-align: right'>#{clpp product[:quantity].to_i * product[:price].to_i}</td>" \
+            "<td style='padding: 5px; text-align: right'>#{ product[:quantity].to_i * product[:price].to_i}</td>" \
           "</tr>"
           total_products += product[:price].to_i * product[:quantity].to_i
         else
@@ -128,12 +128,12 @@ class CustomerMailer < ActionMailer::Base
       table += "<tr style='border-top: 1px solid #DDD'>" \
         "<td colspan='3'></td>" \
         "<td style='padding: 5px; text-align: right' colspan='2'>Subtotal C.IVA</td>" \
-        "<td style='padding: 5px; text-align: right'><b>#{clpp total_products }</b></td>" \
+        "<td style='padding: 5px; text-align: right'><b>#{ total_products }</b></td>" \
         "</tr>" \
         "<tr>" \
           "<td colspan='3'></td>" \
           "<td style='padding: 5px; text-align: right' colspan='2'>Despacho</td>" \
-          "<td style='padding: 5px; text-align: right'><b>#{clpp shipping_cost}</b></td>" \
+          "<td style='padding: 5px; text-align: right'><b>#{ shipping_cost}</b></td>" \
         "</tr>"
 
       #TODO: discount
@@ -141,16 +141,16 @@ class CustomerMailer < ActionMailer::Base
       if false 
         table += "<tr>" \
           "<td style='padding: 5px' colspan=3>CUPÓN DE DESCUENTO: #{self.discount_code}</td>" \
-          "<td style='padding: 5px; text-align: right'>#{clp -self.discount_amount_coupon}</td>" \
+          "<td style='padding: 5px; text-align: right'>#{ -self.discount_amount_coupon}</td>" \
           "<td style='padding: 5px; text-align: right'>1</td>" \
-          "<td style='padding: 5px; text-align: right'>#{clp -self.discount_amount_coupon}</td>" \
+          "<td style='padding: 5px; text-align: right'>#{ -self.discount_amount_coupon}</td>" \
         "</tr>"
       end
       total = total_products + discount + shipping_cost
       table +=  "<tr>" \
         "<td colspan='3'></td>" \
         "<td style='padding: 5px; text-align: right' colspan='2'>Total</td>" \
-        "<td style='padding: 5px; text-align: right'><b>#{clpp total}</b></td>" \
+        "<td style='padding: 5px; text-align: right'><b>#{ total}</b></td>" \
       "</tr>" \
     "</table>"
   end
