@@ -26,5 +26,8 @@ module ApiSpLucius
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
+
+    #Path Libs
+    config.autoload_paths += Dir[Rails.root.join('lib', 'service_layer')]
   end
 end
