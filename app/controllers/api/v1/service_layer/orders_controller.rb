@@ -3,8 +3,8 @@ class Api::V1::ServiceLayer::OrdersController < ApplicationController
 
   def update_order_status
 
-    status_response = nil
-    json_msg = nil
+    status_response = ""
+    report_response = ""
 
     doc_entry = params_order[:doc_entry]
     status = params_order[:order][:status]
@@ -46,15 +46,15 @@ class Api::V1::ServiceLayer::OrdersController < ApplicationController
           when 200 || 201 || 204
             #Success
             status_response = 200
-            json_msg = {report: "OK"}
+            report_response = "OK"
           when (400..499)
             #Bad request
             status_response = 400
-            json_msg = {report: "ERROR: Problemas en la petición hecha a Servicer Layer"}
+            report_response = "ERROR: Problemas en la petición hecha a Servicer Layer"
           when (500..599)
             #Server Problems
             status_response = 500
-            json_msg = {report: "ERROR: Problemas en el servidor de Service Layer"}
+            report_response = "ERROR: Problemas en el servidor de Service Layer"
           end
 
 
@@ -62,23 +62,23 @@ class Api::V1::ServiceLayer::OrdersController < ApplicationController
           MyLog.debug "Exception OrdersController"
           MyLog.debug e
           status_response = 500
-          json_msg = {report: "Exception: #{e}"}
+          report_response = "Exception: #{e}"
         end      
 
       else
         #El estado enviado no es valido
         status_response = 400
-        json_msg = {report: "ERROR: El estado de la orden es invalido"}
+        report_response = "ERROR: El estado de la orden es invalido"
       end
 
     else
 
       #No hay status ingresado
       status_response = 400
-      json_msg = {report: "ERROR: La peticion no posee el estado de la orden"}
+      report_response = "ERROR: La peticion no posee el estado de la orden"
     end
 
-    render json: json_msg, status: status_response
+    render json: {report: report_response }, status: status_response 
   end
 
   def update_line_order_status
@@ -86,7 +86,7 @@ class Api::V1::ServiceLayer::OrdersController < ApplicationController
 
     #data response
     status_response = nil
-    json_msg = nil
+    @report_response = nil
 
     MyLog.debug "params_line_order"
     MyLog.debug params_line_order
@@ -130,15 +130,15 @@ class Api::V1::ServiceLayer::OrdersController < ApplicationController
           when 200 || 201 || 204
             #Success
             status_response = 200
-            json_msg = {report: "OK"}
+            @report_response = {report: "OK"}
           when (400..499)
             #Bad request
             status_response = 400
-            json_msg = {report: "ERROR: Problemas en la petición hecha a Servicer Layer"}
+            @report_response = {report: "ERROR: Problemas en la petición hecha a Servicer Layer"}
           when (500..599)
             #Server Problems
             status_response = 500
-            json_msg = {report: "ERROR: Problemas en el servidor de Service Layer"}
+            @report_response = {report: "ERROR: Problemas en el servidor de Service Layer"}
           end
 
 
@@ -146,19 +146,19 @@ class Api::V1::ServiceLayer::OrdersController < ApplicationController
           MyLog.debug "Exception OrdersController"
           MyLog.debug e
           status_response = 500
-          json_msg = {report: "Exception: #{e}"}
+          @report_response = {report: "Exception: #{e}"}
         end
       else
         #El estado es invalido
         status_response = 400
-        json_msg = {report: "ERROR: El estado de la línea de la orden es inválido"}
+        @report_response = {report: "ERROR: El estado de la línea de la orden es inválido"}
       end 
     else
       #Error en los parametros enviados
       status_response = 400
-      json_msg = {report: "ERROR: Faltan parametros en la petición"}
+      @report_response = {report: "ERROR: Faltan parametros en la petición"}
     end 
-    render json: json_msg, status: status_response
+    render json: @report_response.to_json, status: status_response
   end
 
   def list
